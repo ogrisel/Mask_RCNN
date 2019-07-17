@@ -16,6 +16,7 @@ import tensorflow as tf
 import scipy.misc
 import skimage.color
 import skimage.io
+import skimage.transform
 import urllib.request
 import shutil
 
@@ -397,8 +398,7 @@ def resize_image(image, min_dim=None, max_dim=None, padding=False):
             scale = max_dim / image_max
     # Resize image and mask
     if scale != 1:
-        image = scipy.misc.imresize(
-            image, (round(h * scale), round(w * scale)))
+        image = skimage.transform.resize(image, (round(h * scale), round(w * scale)), preserve_range=True, mode='reflect')
     # Need padding?
     if padding:
         # Get new height and width
@@ -478,8 +478,7 @@ def unmold_mask(mask, bbox, image_shape):
     """
     threshold = 0.5
     y1, x1, y2, x2 = bbox
-    mask = scipy.misc.imresize(
-        mask, (y2 - y1, x2 - x1), interp='bilinear').astype(np.float32) / 255.0
+    mask = skimage.transform.resize(mask, (y2 - y1, x2 - x1), preserve_range=True, mode='reflect').astype(np.float32) / 255.0
     mask = np.where(mask >= threshold, 1, 0).astype(np.uint8)
 
     # Put the mask in the right location.
